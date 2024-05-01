@@ -11,7 +11,7 @@ class FavoritesScehma(Schema):
     user_id = fields.Int()
     pokemon_id = fields.Int()
 
-class CommentSchema(Schema):
-    id = fields.Str(dump_only=True)
-    body = fields.Str(required=True)
-    user_id = fields.Int(required=True)
+# class CommentSchema(Schema):
+#     id = fields.Str(dump_only=True)
+#     body = fields.Str(required=True)
+#     user_id = fields.Int(required=True)
