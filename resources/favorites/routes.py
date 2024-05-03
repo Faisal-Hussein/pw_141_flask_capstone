@@ -1,3 +1,4 @@
+from flask import request, jsonify
 from flask.views import MethodView
 from flask_smorest import abort
 
@@ -11,45 +12,40 @@ from schemas import FavoritesScehma, UserSchema
 
 
 @bp.route('/favorites/<pokemon_id>')
-class LikePost(MethodView):
+class Favorites(MethodView):
+    @bp.post('/create_favorite')
+    def create_favorite():
+        favorites_data = request.get_json()
+        pid = favorites_data['pokemon_id']
+        uid = favorites_data['user_id']
+        fav = FavoritesModel(uid, pid)
+        fav.save_model()
+        return { "message" : "user has favorite success!"}
+    
+    @bp.get('/favorites/<user_id>')
+    def favorites(user_id):
+        favorites = FavoritesModel.query.filter_by(user_id = int(user_id)).all()
+        if favorites:
+            return { "favorites" : favorites }
+        return { 'msg' : 'favorites failure . . .'}
+    
+    def unfavorite(self, user_id):
+        favorite = FavoritesModel.query.get(user_id)
+        if favorite:
+            favorite.del_favorite()
+            return { "message" : "pokemon has been unfavorited"}
+        return { 'message' : 'unfavorite failure . . .'}
+    
 
-    @jwt_required()
-    @bp.response(201, FavoritesScehma)
-    def post(self, favorites_id):
-
-        user_id = get_jwt_identity()
-        favorite = FavoritesModel.query.get(favorites_id)
-        user = UserModel.query.get(user_id)
-        if user and favorite:
-            faved_by_user = FavoritesModel.query.filter_by(favorites_id = favorites_id).filter_by(user_id = user_id).all()
-            if faved_by_user:
-                return favorite
-            FavoritesModel = FavoritesModel(user_id=user_id, favorites_id=favorites_id)
-            FavoritesModel.save()
-            return favorite
-        abort(400, message="Invalid User or Favorite")
-
-    @jwt_required()
-    def delete(self, pokemon_id):
-        user_id = get_jwt_identity()
-        pokemon = FavoritesModel.query.get(pokemon_id)
-        user = UserModel.query.get(user_id)
-        if user and pokemon:
-            liked_by_user = FavoritesModel.query.filter_by(pokemon_id=pokemon_id).filter_by(user_id = user_id).all()
-            
-            for like in liked_by_user:
-                like.delete()
-
-            return {'message':"deleted"}, 201
-        abort(400, message="Invalid User or Favorite")
+    
+    # def delete(self, id):
+    #     user = UserModel.query.get(id)
+    #     if user:
+    #         user.del_user()
+    #         return { "message": "user GONE GONE GONE"}, 200
+    #     abort(400, message="not a valid user")
 
 
-    @bp.response(200, UserSchema(many=True))
-    def get(self, pokemon_id):
-        favorite = FavoritesModel.query.get(pokemon_id)
-        if not favorite:
-            abort(400, message="Invalid Favorite")
-
-        faves = FavoritesModel.query.filter_by(pokemon_id = pokemon_id).all()
-
-        return [UserModel.query.get(fav.user_id) for fav in faves]    
+# create a favorite by saving pokemon id and user id
+# querying favorites where id = user id
+# unfavorites
