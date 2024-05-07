@@ -9,6 +9,7 @@ from . import bp
 
 #from db import users
 from models.user_model import UserModel
+from models.favorites_model import FavoritesModel
 
 @bp.route('/user')
 class UserList(MethodView):
@@ -25,9 +26,11 @@ class UserList(MethodView):
             user = UserModel()
             user.from_dict(data)
             user.save_user()
+            print(data)
             return user
         except:
             abort(400, message="username or email already taken, please try a different one!")
+    
 
         
 @bp.route('/user/<int:id>')
@@ -69,7 +72,10 @@ class User(MethodView):
         user = UserModel.query.filter_by(username = username).first()
         if user and user.check_password( login_data['password'] ):
             access_token = create_access_token(identity=user.id)
-            return {'access_token': access_token}, 201
+            fav = FavoritesModel.query.filter_by(user_id=user.id).all()
+            if fav:
+                return {'access_token': access_token, 'favorites' : fav}, 201
+            return {'access_token': access_token, 'favorites' : []}, 201
 
         abort(400, message="Invalid User Data")
 

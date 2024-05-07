@@ -6,7 +6,7 @@ class FavoritesModel(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    pokemon_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    pokemon_id = db.Column(db.Integer, nullable=False)
     
     def save_favorite(self):
         db.session.add(self)

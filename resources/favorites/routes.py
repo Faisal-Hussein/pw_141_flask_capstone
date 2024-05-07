@@ -11,26 +11,29 @@ from models.favorites_model import FavoritesModel
 from schemas import FavoritesScehma, UserSchema
 
 
-@bp.route('/favorites/<pokemon_id>')
+@bp.route('/favorites')
 class Favorites(MethodView):
-    @bp.post('/create_favorite')
-    def create_favorite():
+    def post(self):
         favorites_data = request.get_json()
         pid = favorites_data['pokemon_id']
         uid = favorites_data['user_id']
-        fav = FavoritesModel(uid, pid)
-        fav.save_model()
+        fav = FavoritesModel(user_id = uid, pokemon_id = pid)
+        fav.save_favorite()
         return { "message" : "user has favorite success!"}
     
-    @bp.get('/favorites/<user_id>')
-    def favorites(user_id):
-        favorites = FavoritesModel.query.filter_by(user_id = int(user_id)).all()
+    def get(self):
+        favorites_data = request.get_json()
+        uid = favorites_data['user_id']
+        favorites = FavoritesModel.query.filter_by(user_id = int(uid)).all()
         if favorites:
-            return { "favorites" : favorites }
+            print([favorite.pokemon_id for favorite in favorites])
+            return { "favorites" : [favorite.pokemon_id for favorite in favorites] }
         return { 'msg' : 'favorites failure . . .'}
     
-    def unfavorite(self, user_id):
-        favorite = FavoritesModel.query.get(user_id)
+    def delete(self):
+        favorites_data = request.get_json()
+        uid = favorites_data['user_id']
+        favorite = FavoritesModel.query.get(uid)
         if favorite:
             favorite.del_favorite()
             return { "message" : "pokemon has been unfavorited"}
