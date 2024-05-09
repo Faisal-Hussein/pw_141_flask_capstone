@@ -13,11 +13,14 @@ from schemas import FavoritesScehma, UserSchema
 
 @bp.route('/favorites')
 class Favorites(MethodView):
+    @jwt_required()
     def post(self):
         favorites_data = request.get_json()
+        print(favorites_data)
         pid = favorites_data['pokemon_id']
-        uid = favorites_data['user_id']
+        uid = get_jwt_identity()
         fav = FavoritesModel(user_id = uid, pokemon_id = pid)
+        print(fav)
         fav.save_favorite()
         return { "message" : "user has favorite success!"}
     
@@ -30,10 +33,14 @@ class Favorites(MethodView):
             return { "favorites" : [favorite.pokemon_id for favorite in favorites] }
         return { 'msg' : 'favorites failure . . .'}
     
+    @jwt_required()
     def delete(self):
         favorites_data = request.get_json()
-        uid = favorites_data['user_id']
-        favorite = FavoritesModel.query.get(uid)
+        print(favorites_data)
+        pid = favorites_data['pokemon_id']
+        uid = get_jwt_identity()
+        favorite = FavoritesModel.query.filter_by(user_id=uid, pokemon_id=pid).first()
+        print(favorite)
         if favorite:
             favorite.del_favorite()
             return { "message" : "pokemon has been unfavorited"}

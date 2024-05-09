@@ -73,8 +73,9 @@ class User(MethodView):
         if user and user.check_password( login_data['password'] ):
             access_token = create_access_token(identity=user.id)
             fav = FavoritesModel.query.filter_by(user_id=user.id).all()
+            print([poke for poke in fav])
             if fav:
-                return {'access_token': access_token, 'favorites' : fav}, 201
+                return {'access_token': access_token, 'favorites' : [poke.pokemon_id for poke in fav]}, 201
             return {'access_token': access_token, 'favorites' : []}, 201
 
         abort(400, message="Invalid User Data")
